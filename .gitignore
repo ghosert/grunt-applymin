@@ -1,0 +1,7 @@
+node_modules/
+npm-debug.log
+tmp
+*.class
+*.pyc
+*.swp
+.cache/
