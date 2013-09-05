@@ -30,20 +30,13 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     applymin: {
-      default_options: {
-        options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123'],
-        },
-      },
-      custom_options: {
+      beginmin: {
         options: {
           separator: ': ',
           punctuation: ' !!!',
         },
         files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123'],
+          'sample/static/assets': ['sample/views/**/*.tpl'],
         },
       },
     },
@@ -65,7 +58,8 @@ module.exports = function(grunt) {
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'applymin', 'nodeunit']);
+  // grunt.registerTask('test', ['clean', 'applymin', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'applymin']);
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
