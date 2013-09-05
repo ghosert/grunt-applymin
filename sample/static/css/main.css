@@ -1,0 +1,75 @@
+body {
+    padding-top: 100px;
+    /* background: url(../linedpaper/linedpaper.png) repeat 0 0; */
+}
+
+body, button, input, select, textarea {
+	font-family: Microsoft Yahei, Hiragino Sans GB, WenQuanYi Micro Hei, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6{
+    font-family: Helvetica Neue, Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif;
+}
+
+/* General for all pages
+----------------------------------------------------------------- */
+.page-header {
+    margin-top: 40px;
+    font-size: 21px;
+}
+
+.page-content {
+    font-size: 16px;
+}
+
+.large-font {
+    font-size: 21px;
+}
+
+.middle-font {
+    font-size: 16px;
+}
+
+.normal-font {
+    font-size: 14px;
+}
+
+.strong-muted {
+    color: #666666;
+}
+
+.small-header {
+    color: #999999;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.middle-header {
+    color: #999999;
+    font-weight: bold;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.radio.inline,
+.checkbox.inline {
+    display: inline-block;
+}
+
+#container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+#container ol {
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+#container ol li {
+    margin-bottom: 10px;
+}
+
