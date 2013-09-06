@@ -12,9 +12,6 @@ module.exports = function(grunt) {
 
 
   var beginmin = {
-      assetsPath: 'assets', // the folder which will store all the produced css/js files, you should start with this name for your targetFilePath which defined in your html template.
-      htmlTemplateAppendix: '.tpl', // Setting the appendix of your html template file, for example: .jsp/.mako/.tml
-      htmlTemplatePath: '../views',  // The folder contains all the html template files to be parsed.
       concatFiles: {},
       cssminFiles: {},
       uglifyFiles: {},
@@ -76,7 +73,7 @@ module.exports = function(grunt) {
   };
 
   // Change 'assets/mdeditor.min.js' to 'assets/' and 'mdeditor.min.js'
-  // The passed in targetFilePath should have been checked start with 'beginmin.assetsPath' and end with '.css/.js'
+  // The passed in targetFilePath should have been checked start with 'destPath' and end with '.css/.js'
   var _splitPathAndFilename = function (targetFilePath) {
     var splitPaths = targetFilePath.split('/');
     var targetFilename = splitPaths.pop();
@@ -85,7 +82,7 @@ module.exports = function(grunt) {
     return [targetPath, targetFilename];
   };
 
-  var _getTargetFileRefrences = function (abspath, fileContent, targetFilePaths) {
+  var _getTargetFileRefrences = function (abspath, fileContent, targetFilePaths, destPath) {
     var fileContentWithoutStaticBlocks = fileContent.replace(beginmin.beginminPattern_global, '');
 
     // Get all the static files excluding the ones in beginmin comment blocks.
@@ -100,8 +97,8 @@ module.exports = function(grunt) {
 
         var targetFilePath = targetFilePaths[fileIndex];
 
-        if (targetFilePath.indexOf(beginmin.assetsPath + '/') !== 0) {
-            grunt.warn('In the file: ' + abspath + ', the target filename should start with ' + beginmin.assetsPath + '/' + ' instead of current one: ' + targetFilePath);
+        if (targetFilePath.indexOf(destPath + '/') !== 0) {
+            grunt.warn('In the file: ' + abspath + ', the target filename should start with ' + destPath + '/' + ' instead of current one: ' + targetFilePath);
         }
 
         if (!targetFilePath.match(/\S+\.(css|js)$/i)) {
@@ -149,16 +146,14 @@ module.exports = function(grunt) {
     return {cssFileRefs: cssFileRefs, jsFileRefs: jsFileRefs, targetFilePaths: targetFilePaths};
   };
 
-  grunt.registerMultiTask('applymin', 'Concat, minify and revisioning css/js files in html template page and easily switch optimized/raw css/js references in the html template files.', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
-
+  var _beginmin = function (files) {
     // Iterate over all specified file groups.
-    this.files.forEach(function (file) {
+    files.forEach(function (file) {
         var files = file.src;
+        var destPath = file.dest;
+        if (destPath.match(/\/$/)) { // Get rid of the last '/' if there is in destPath.
+            destPath = destPath.substring(0, destPath.length - 1);
+        }
         files.map(grunt.file.read).forEach(function (fileContent, i) {
             var abspath = files[i];
             var results = fileContent.match(beginmin.beginminPattern_global);
@@ -172,7 +167,7 @@ module.exports = function(grunt) {
                 }
 
                 // get object contains all the targetFilePath in the css/js tags.
-                var targetFileRefs = _getTargetFileRefrences(abspath, fileContent, targetFilePaths);
+                var targetFileRefs = _getTargetFileRefrences(abspath, fileContent, targetFilePaths, destPath);
                 // Store results for the applymin later.
                 beginmin.htmlTemplateFiles[abspath] = targetFileRefs;
 
@@ -185,33 +180,99 @@ module.exports = function(grunt) {
             }
         });
     });
-    /**
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
+  };
+
+  // Update the css/js revision in html template files.
+  var _endmin = function() {
+
+    // Store all the css/js abspaths
+    var cssAbspaths = [];
+    var jsAbspaths = [];
+    grunt.file.recurse(beginmin.assetsPath, function(abspath, rootdir, subdir, filename) {
+        if (abspath.match(/\.css$/i)) {
+            cssAbspaths.push(abspath);
+        } else if (abspath.match(/\.js$/i)) {
+            jsAbspaths.push(abspath);
         }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
-
-      // Handle options.
-      src += options.punctuation;
-
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
-
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
     });
-  **/
 
+    var htmlTemplateFiles = beginmin.htmlTemplateFiles;
+    for (var templateFilename in htmlTemplateFiles) {
+
+        var targetFileRefs = htmlTemplateFiles[templateFilename];
+
+        // Will be used to replace the html template later.
+        var changedRevStaticFileRefs = {};
+        var isChangedHtmlTemplateFile = false;
+
+        // <link href="${request.static_url('zuoyeproject:static/assets/mdeditor.lib.min.css')}" rel="stylesheet" media="screen">
+        for (var fileIndex in targetFileRefs.targetFilePaths) {
+            var targetFilePath = targetFileRefs.targetFilePaths[fileIndex];
+
+            // Change 'assets/mdeditor.min.js' to 'assets/' and 'mdeditor.min.js'
+            var pathFilename = _splitPathAndFilename(targetFilePath);
+            var targetPath = pathFilename[0];
+            var targetFilename = pathFilename[1];
+
+            var filenamePattern = new RegExp(targetPath + '\\S+?\\.' + targetFilename);
+            var abspaths = null;
+            var staticFileRefs = null;
+            if (targetFilePath.match(/\.css$/i)) {
+                abspaths = cssAbspaths;
+                staticFileRefs = targetFileRefs.cssFileRefs;
+            } else if (targetFilePath.match(/\.js$/i)) {
+                abspaths = jsAbspaths;
+                staticFileRefs = targetFileRefs.jsFileRefs;
+            }
+
+            // Find the revision file based on targetFilePath defined in html template.
+            var revTargetFilePath = null;
+            // Check whether css/js reference tags contain the targetFilePath in the current html template file.
+            for (var index in abspaths) {
+                if (abspaths[index].match(filenamePattern)) {
+                    revTargetFilePath = abspaths[index];
+                    break;
+                }
+            }
+            if (revTargetFilePath === null) {
+                grunt.warn('In the file: ' + templateFilename + ', the target filename: ' + targetFilePath + ' has not been handled to produce a corresponding revision file.');
+            }
+
+            // Find referred js/cs tags based on targetFilePath defined in html template.
+            var staticFileRef = staticFileRefs[targetFilePath];
+            if (staticFileRef === undefined) {
+                grunt.warn('In the file: ' + templateFilename + ', the target filename: ' + targetFilePath + ' is not referred by any css/js tags.');
+            }
+            var revStaticFileRef = staticFileRef.replace(new RegExp(targetPath + '(\\S+?\\.' + targetFilename + '|' + targetFilename + ')', 'i'), revTargetFilePath);
+            if (revStaticFileRef !== staticFileRef) {
+                changedRevStaticFileRefs[staticFileRef] = revStaticFileRef;
+                isChangedHtmlTemplateFile = true;
+            }
+        }
+        if (isChangedHtmlTemplateFile) {
+            var fileContent = grunt.file.read(templateFilename);
+            for (var staticFileRefKey in changedRevStaticFileRefs) {
+                while (fileContent.indexOf(staticFileRefKey) !== -1) { // replace all for string as the first parameter instead of regexp.
+                    grunt.log.writeln('Change: ' + staticFileRefKey);
+                    fileContent = fileContent.replace(staticFileRefKey, changedRevStaticFileRefs[staticFileRefKey]);
+                    grunt.log.writeln('To: ' + changedRevStaticFileRefs[staticFileRefKey]);
+                    grunt.log.writeln();
+                }
+            }
+            grunt.file.write(templateFilename, fileContent);
+            grunt.log.write('The file named: ' + templateFilename + ' has been changed...').ok();
+        }
+    }
+  };
+
+
+  grunt.registerMultiTask('applymin', 'Concat, minify and revisioning css/js files in html template page and easily switch optimized/raw css/js references in the html template files.', function () {
+      if (this.target === 'beginmin') {
+          _beginmin(this.files);
+      } else if (this.target === 'endmin') {
+          _endmin();
+      }
   });
+
 
 };

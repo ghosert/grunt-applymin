@@ -28,19 +28,6 @@ module.exports = function(grunt) {
       tests: ['tmp'],
     },
 
-    // Configuration to be run (and then tested).
-    applymin: {
-      beginmin: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!',
-        },
-        files: {
-          'sample/static/assets': ['sample/views/**/*.tpl'],
-        },
-      },
-    },
-
     // Unit tests.
     nodeunit: {
       tests: ['test/*_test.js'],
@@ -58,8 +45,8 @@ module.exports = function(grunt) {
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  // grunt.registerTask('test', ['clean', 'applymin', 'nodeunit']);
-  grunt.registerTask('test', ['clean', 'applymin']);
+  // grunt.registerTask('test', ['clean', 'nodeunit']);
+  grunt.registerTask('test', ['clean']);
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);

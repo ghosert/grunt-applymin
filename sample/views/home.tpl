@@ -8,14 +8,14 @@
             <link href="{{domain_url}}/static/assets/main.lib.min.css" rel="stylesheet" media="screen">
             <link href="{{domain_url}}/static/assets/main.min.css" rel="stylesheet" media="screen">
 		%else:
-            <!-- beginmin: assets/main.lib.min.css -->
+            <!-- beginmin: static/assets/main.lib.min.css -->
             <link href="{{domain_url}}/static/css/bootstrap.css" rel="stylesheet" media="screen">
             <link href="{{domain_url}}/static/css/smoothness/jquery-ui-1.10.2.custom.css" rel="stylesheet" media="screen">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <link href="{{domain_url}}/static/css/bootstrap-responsive.css" rel="stylesheet">
             <!-- endmin -->
 
-            <!-- beginmin: assets/main.min.css -->
+            <!-- beginmin: static/assets/main.min.css -->
             <link href="{{domain_url}}/static/css/main.css" rel="stylesheet">
             <!-- endmin -->
 		%end
@@ -37,7 +37,7 @@
 	%if static_minified == True:
 		<script src="{{domain_url}}/static/assets/main.lib.min.js"></script>
 	%else:
-		<!-- beginmin: assets/main.lib.min.js -->
+		<!-- beginmin: static/assets/main.lib.min.js -->
 		<script src="{{domain_url}}/static/js/libs/jquery-1.8.3.js"></script>
 		<script src="{{domain_url}}/static/js/libs/jquery-ui-1.10.2.custom.js"></script>
 		<script src="{{domain_url}}/static/js/libs/bootstrap.js"></script>
