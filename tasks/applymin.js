@@ -11,13 +11,13 @@
 module.exports = function(grunt) {
 
 
-  var beginmin = {
+  var applyminGlobal = {
       concatFiles: {},
       cssminFiles: {},
       uglifyFiles: {},
       htmlTemplateFiles: {}, // store all the html template names as the key, and css/js minified files and the targetFilePaths as the values.
       // self defined staticPattern
-      staticPattern: /static\/(.*?\.(css|js))/i,
+      staticPattern: null,
       // case insensitive for html tags.
       cssPattern: /<link\s+href\s*=\s*['"][\s\S]+?\.css[\s\S]+?>/gi,
       jsPattern: /<script\s+src\s*=\s*['"][\s\S]+?\.js[\s\S]+?>/gi,
@@ -41,7 +41,7 @@ module.exports = function(grunt) {
                 // results[index] could be like below, use staticPattern to fetch real static filepath further.
                 // <link href="${request.static_url('zuoyeproject:static/css/bootstrap.css')}" rel="stylesheet" media="screen">
                 // <script src="${request.static_url('zuoyeproject:static/editor/common.js')}">
-                var result = results[index].match(beginmin.staticPattern);
+                var result = results[index].match(applyminGlobal.staticPattern);
                 if (!grunt.file.exists(result[1])) {
                     grunt.warn('This file does not exist: "' + result[1] + '"');
                 }
@@ -58,14 +58,13 @@ module.exports = function(grunt) {
     var pattern = null;
 
     if (targetFilePath.match(/\.css$/i)) {
-        pattern = beginmin.cssPattern;
-        files = beginmin.cssminFiles;
+        pattern = applyminGlobal.cssPattern;
+        files = applyminGlobal.cssminFiles;
     } else if (targetFilePath.match(/\.js$/i)) {
-        pattern = beginmin.jsPattern;
-        files = beginmin.concatFiles;
-
+        pattern = applyminGlobal.jsPattern;
+        files = applyminGlobal.concatFiles;
         // One more step for the js file: The js file will be uglified further.
-        beginmin.uglifyFiles[targetFilePath] = targetFilePath;
+        applyminGlobal.uglifyFiles[targetFilePath] = targetFilePath;
     }
 
     // handle css or js
@@ -83,11 +82,11 @@ module.exports = function(grunt) {
   };
 
   var _getTargetFileRefrences = function (abspath, fileContent, targetFilePaths, destPath) {
-    var fileContentWithoutStaticBlocks = fileContent.replace(beginmin.beginminPattern_global, '');
+    var fileContentWithoutStaticBlocks = fileContent.replace(applyminGlobal.beginminPattern_global, '');
 
     // Get all the static files excluding the ones in beginmin comment blocks.
-    var cssFiles = fileContentWithoutStaticBlocks.match(beginmin.cssPattern);
-    var jsFiles = fileContentWithoutStaticBlocks.match(beginmin.jsPattern);
+    var cssFiles = fileContentWithoutStaticBlocks.match(applyminGlobal.cssPattern);
+    var jsFiles = fileContentWithoutStaticBlocks.match(applyminGlobal.jsPattern);
 
     // Check the css/js tags contain the targetFilePath or not, if yes, put them to the cssFileRefs/jsFileRefs
     var cssFileRefs = {};
@@ -146,49 +145,42 @@ module.exports = function(grunt) {
     return {cssFileRefs: cssFileRefs, jsFileRefs: jsFileRefs, targetFilePaths: targetFilePaths};
   };
 
-  var _beginmin = function (files) {
+  var _beginmin = function (srcFiles, destPath) {
     // Iterate over all specified file groups.
-    files.forEach(function (file) {
-        var files = file.src;
-        var destPath = file.dest;
-        if (destPath.match(/\/$/)) { // Get rid of the last '/' if there is in destPath.
-            destPath = destPath.substring(0, destPath.length - 1);
-        }
-        files.map(grunt.file.read).forEach(function (fileContent, i) {
-            var abspath = files[i];
-            var results = fileContent.match(beginmin.beginminPattern_global);
-            if (results) {
-                var targetFilePaths = [];
-                var staticBlocks = [];
-                for (var index in results) {
-                    var result = results[index].match(beginmin.beginminPattern);
-                    targetFilePaths.push(result[1]); // target file path.
-                    staticBlocks.push(result[2]); // static block, maybe css/js
-                }
-
-                // get object contains all the targetFilePath in the css/js tags.
-                var targetFileRefs = _getTargetFileRefrences(abspath, fileContent, targetFilePaths, destPath);
-                // Store results for the applymin later.
-                beginmin.htmlTemplateFiles[abspath] = targetFileRefs;
-
-                // handle each staticBlock.
-                for (var fileIndex in targetFilePaths) {
-                    var targetFilePath = targetFilePaths[fileIndex];
-                    var staticBlock = staticBlocks[fileIndex];
-                    _handleStaticBlock(abspath, targetFilePath, staticBlock);
-                }
+    srcFiles.map(grunt.file.read).forEach(function (fileContent, i) {
+        var abspath = srcFiles[i];
+        var results = fileContent.match(applyminGlobal.beginminPattern_global);
+        if (results) {
+            var targetFilePaths = [];
+            var staticBlocks = [];
+            for (var index in results) {
+                var result = results[index].match(applyminGlobal.beginminPattern);
+                targetFilePaths.push(result[1]); // target file path.
+                staticBlocks.push(result[2]); // static block, maybe css/js
             }
-        });
+
+            // get object contains all the targetFilePath in the css/js tags.
+            var targetFileRefs = _getTargetFileRefrences(abspath, fileContent, targetFilePaths, destPath);
+            // Store results for the applymin later.
+            applyminGlobal.htmlTemplateFiles[abspath] = targetFileRefs;
+
+            // handle each staticBlock.
+            for (var fileIndex in targetFilePaths) {
+                var targetFilePath = targetFilePaths[fileIndex];
+                var staticBlock = staticBlocks[fileIndex];
+                _handleStaticBlock(abspath, targetFilePath, staticBlock);
+            }
+        }
     });
   };
 
   // Update the css/js revision in html template files.
-  var _endmin = function() {
+  var _endmin = function(destPath) {
 
     // Store all the css/js abspaths
     var cssAbspaths = [];
     var jsAbspaths = [];
-    grunt.file.recurse(beginmin.assetsPath, function(abspath, rootdir, subdir, filename) {
+    grunt.file.recurse(destPath, function(abspath, rootdir, subdir, filename) {
         if (abspath.match(/\.css$/i)) {
             cssAbspaths.push(abspath);
         } else if (abspath.match(/\.js$/i)) {
@@ -196,7 +188,7 @@ module.exports = function(grunt) {
         }
     });
 
-    var htmlTemplateFiles = beginmin.htmlTemplateFiles;
+    var htmlTemplateFiles = applyminGlobal.htmlTemplateFiles;
     for (var templateFilename in htmlTemplateFiles) {
 
         var targetFileRefs = htmlTemplateFiles[templateFilename];
@@ -267,10 +259,44 @@ module.exports = function(grunt) {
 
 
   grunt.registerMultiTask('applymin', 'Concat, minify and revisioning css/js files in html template page and easily switch optimized/raw css/js references in the html template files.', function () {
+      var applymin = grunt.config('applymin');
+      var srcFiles = applymin['beginmin'];
+      var destPath = applymin['endmin'];
+      if (destPath.match(/\/$/)) { // Get rid of the last '/' if there is in destPath.
+          destPath = destPath.substring(0, destPath.length - 1);
+      }
+      var options = this.options({
+          // default value
+          staticPattern: /['"](.*?\.(css|js))/i
+      });
       if (this.target === 'beginmin') {
-          _beginmin(this.files);
+
+          applyminGlobal.staticPattern = options.staticPattern;
+          srcFiles = grunt.file.expand(srcFiles);
+          _beginmin(srcFiles, destPath);
+
+          // Get concat/uglify/cssmin, set key named 'applyminFiles' with filled files and write back to config.
+          var concat = grunt.config('concat') || {};
+          var uglify = grunt.config('uglify') || {};
+          var cssmin = grunt.config('cssmin') || {};
+          var rev = grunt.config('rev') || {};
+          concat['applymin'] = {};
+          uglify['applymin'] = {};
+          cssmin['applymin'] = {};
+          rev['applymin'] = {};
+          concat['applymin']['files'] = applyminGlobal.concatFiles;
+          uglify['applymin']['files'] = applyminGlobal.uglifyFiles;
+          cssmin['applymin']['files'] = applyminGlobal.cssminFiles;
+          rev['applymin']['src'] = destPath + '/**/*';
+          grunt.config('concat', concat);
+          grunt.config('uglify', uglify);
+          grunt.config('cssmin', cssmin);
+          grunt.config('rev', rev);
       } else if (this.target === 'endmin') {
-          _endmin();
+          if (!grunt.file.exists(destPath)) {
+              grunt.warn('The output folder: ' + destPath + ' does not exist.');
+          }
+          _endmin(destPath);
       }
   });
 
