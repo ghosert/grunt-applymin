@@ -269,7 +269,7 @@ module.exports = function(grunt) {
       }
       var options = this.options({
           // default value
-          staticPattern: /['"](.*?\.(css|js))/i
+          staticPattern: /['"](.*?\.(css|js))['"]/i
       });
       if (this.target === 'beginmin') {
 
