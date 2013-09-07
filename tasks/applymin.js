@@ -15,6 +15,7 @@ module.exports = function(grunt) {
       concatFiles: {},
       cssminFiles: {},
       uglifyFiles: {},
+      revFiles: [],
       htmlTemplateFiles: {}, // store all the html template names as the key, and css/js minified files and the targetFilePaths as the values.
       // self defined staticPattern
       staticPattern: null,
@@ -66,6 +67,7 @@ module.exports = function(grunt) {
         // One more step for the js file: The js file will be uglified further.
         applyminGlobal.uglifyFiles[targetFilePath] = targetFilePath;
     }
+    applyminGlobal.revFiles.push(targetFilePath);
 
     // handle css or js
     _fillUpFilesWithPattern(abspath, targetFilePath, pattern, files, staticBlock);
@@ -287,7 +289,7 @@ module.exports = function(grunt) {
           concat['applymin']['files'] = applyminGlobal.concatFiles;
           uglify['applymin']['files'] = applyminGlobal.uglifyFiles;
           cssmin['applymin']['files'] = applyminGlobal.cssminFiles;
-          rev['applymin']['src'] = destPath + '/**/*';
+          rev['applymin']['src'] = applyminGlobal.revFiles;
           grunt.config('concat', concat);
           grunt.config('uglify', uglify);
           grunt.config('cssmin', cssmin);

@@ -36,14 +36,11 @@ module.exports = function(grunt) {
             // They regular expression to match and fetch the css/js resource in your html templates.
             staticPattern: /(static\/.*?\.(css|js))/i,
         },
-        // The 'beginmin: srcFiles' contains all your html templates.
+        // The 'beginmin: srcFiles' contains all your html templates, for example: *.jsp/*.php/*.mako/*.tpl
         beginmin: 'views/**/*.tpl',
         // The 'endmin: destPath' will store all the produced css/js files
         // You should start with this name for your targetFilePath which defined in your html template.
         endmin: 'static/assets'
-    },
-    clean: {
-        all: ['static/assets/**/*']
     },
   });
 
@@ -51,11 +48,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
-  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-rev');
   grunt.loadNpmTasks('grunt-applymin');
 
   // Default task(s).
-  grunt.registerTask('default', ['clean:all', 'applymin:beginmin', 'concat', 'uglify', 'cssmin', 'rev', 'applymin:endmin']);
+  grunt.registerTask('default', ['applymin:beginmin', 'concat', 'uglify', 'cssmin', 'rev', 'applymin:endmin']);
 };
 
