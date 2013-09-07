@@ -28,8 +28,8 @@
 		</h2>
 		<ol>
 			<li> Reload this page, you will see 8 requests in browser for css/js</li>
-			<li> 'cd grunt-applymin/static', run 'grunt' to combine/minify/revisioning js/css files.</li>
-			<li> Edit 'grunt-applymin/hello.py', change 'static_minified = False' to True</li>
+			<li> 'cd grunt-applymin/sample', run 'grunt' to combine/minify/revisioning js/css files.</li>
+			<li> Edit 'grunt-applymin/sample/hello.py', change 'static_minified = False' to 'True'</li>
 			<li> Reload 'http://localhost:8080/', ONLY 3 requests now in browser for minified css/js</li>
 		</ol>
 	</div>
