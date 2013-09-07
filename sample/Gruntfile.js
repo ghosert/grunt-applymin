@@ -33,13 +33,13 @@ module.exports = function(grunt) {
     },
     applymin: {
         options: {
-            // They regular expression to match and fetch the css/js resource in your html templates.
+            // The regular expression to match and fetch the css/js resource in your html templates.
             staticPattern: /(static\/.*?\.(css|js))/i,
         },
         // The 'beginmin: srcFiles' contains all your html templates, for example: *.jsp/*.php/*.mako/*.tpl
         beginmin: 'views/**/*.tpl',
-        // The 'endmin: destPath' will store all the produced css/js files
-        // You should start with this name for your targetFilePath which defined in your html template.
+        // The 'endmin: destPath' will store all the minified css/js files
+        // In your html template, the target filepath in 'beginmin' comments should start with this name.
         endmin: 'static/assets'
     },
   });
