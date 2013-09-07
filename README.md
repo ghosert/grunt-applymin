@@ -142,7 +142,7 @@ grunt.initConfig({
 Type: `RegExp`
 Default value: `/['"](.*?\.(css|js))['"]/i`
 
-A RegExp value to fetch the paths of the css/js resources in <link> or <script> html tags within <!-- beginmin --><!-- endmin --> blocks. Suppose your html template looks like below:
+A RegExp value to fetch the paths of the css/js resources in `<link>` or `<script>` html tags within <!-- beginmin --><!-- endmin --> blocks. Suppose your html template looks like below:
     
 ```
 <!-- beginmin: static/assets/main.lib.min.css -->
