@@ -1,7 +1,7 @@
 {
   "name": "grunt-applymin",
   "description": "Concat, minify and revisioning css/js files in html template page and easily switch optimized/raw css/js references in the html template files.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "homepage": "https://github.com/ghosert/grunt-applymin",
   "author": {
     "name": "ghosert",
