@@ -44,6 +44,9 @@ module.exports = function(grunt) {
                 // <link href="${request.static_url('zuoyeproject:static/css/bootstrap.css')}" rel="stylesheet" media="screen">
                 // <script src="${request.static_url('zuoyeproject:static/editor/common.js')}">
                 var result = results[index].match(applyminGlobal.staticPattern);
+                if (result === null || result.length < 2) {
+                    grunt.warn('Please check whether your "options.staticPattern": ' + applyminGlobal.staticPattern + '\n\ncould be used to fetch the static resource:\n\n' + results[index] + '\n\nin the file ' + '"' + abspath + '"');
+                }
                 if (!grunt.file.exists(result[1])) {
                     grunt.warn('This file does not exist: "' + result[1] + '"');
                 }
