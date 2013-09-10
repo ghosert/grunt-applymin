@@ -224,4 +224,5 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 ## Release History
 
 * 2013-09-07 / v0.1.0 / initial commit
+* 2013-09-10 / v0.1.1 / 1. bug fix on RegExp and the same pattern on multiple revision files.
 

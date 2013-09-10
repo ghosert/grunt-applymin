@@ -10,6 +10,7 @@
 
 module.exports = function(grunt) {
 
+  var fs = require('fs');
 
   var applyminGlobal = {
       concatFiles: {},
@@ -20,8 +21,8 @@ module.exports = function(grunt) {
       // self defined staticPattern
       staticPattern: null,
       // case insensitive for html tags.
-      cssPattern: /<link\s+href\s*=\s*['"][\s\S]+?\.css[\s\S]+?>/gi,
-      jsPattern: /<script\s+src\s*=\s*['"][\s\S]+?\.js[\s\S]+?>/gi,
+      cssPattern: /<link[\s\S]+?href\s*=\s*['"][\s\S]+?\.css[\s\S]+?>/gi,
+      jsPattern: /<script[\s\S]+?src\s*=\s*['"][\s\S]+?\.js[\s\S]+?>/gi,
       beginminPattern_global: /<!--\s*beginmin:\s*(\S+)\s*-->([\s\S]*?)<!--\s*endmin\s*-->/g,
       beginminPattern: /<!--\s*beginmin:\s*(\S+)\s*-->([\s\S]*?)<!--\s*endmin\s*-->/
   };
@@ -120,12 +121,12 @@ module.exports = function(grunt) {
             // <link href="${request.static_url('zuoyeproject:static/assets/mdeditor.lib.min.css')}" rel="stylesheet" media="screen">
             // <link href="${request.static_url('zuoyeproject:static/assets/12345678.mdeditor.lib.min.css')}" rel="stylesheet" media="screen">
             // means /<link\s+href\s*=[\s\S]+?assets/(\S+?\.mdeditor.min.js|mdeditor.min.js)[\s\S]+?>/gi
-            refPattern = new RegExp('<link\\s+href\\s*=[\\s\\S]+?' + targetPath + '(\\S+?\\.' + targetFilename + '|' + targetFilename + ')[\\s\\S]+?>', 'i');
+            refPattern = new RegExp('<link[\\s\\S]+?href\\s*=[\\s\\S]+?' + targetPath + '(\\S+?\\.' + targetFilename + '|' + targetFilename + ')[\\s\\S]+?>', 'i');
             staticFiles = cssFiles;
             staticFileRefs = cssFileRefs;
         } else if (targetFilePath.match(/\.js$/i)) {
             // means /<script\s+src\s*=[\s\S]+?assets/(\S+?\.mdeditor.min.js|mdeditor.min.js)[\s\S]+?>/gi
-            refPattern = new RegExp('<script\\s+src\\s*=[\\s\\S]+?' + targetPath + '(\\S+?\\.' + targetFilename + '|' + targetFilename + ')[\\s\\S]+?>', 'i');
+            refPattern = new RegExp('<script[\\s\\S]+?src\\s*=[\\s\\S]+?' + targetPath + '(\\S+?\\.' + targetFilename + '|' + targetFilename + ')[\\s\\S]+?>', 'i');
             staticFiles = jsFiles;
             staticFileRefs = jsFileRefs;
         }
@@ -219,13 +220,25 @@ module.exports = function(grunt) {
                 staticFileRefs = targetFileRefs.jsFileRefs;
             }
 
-            // Find the revision file based on targetFilePath defined in html template.
+            // Find the revision file based on targetFilePath defined in html template, if there are multiple files matched, pick up the latest one.
             var revTargetFilePath = null;
-            // Check whether css/js reference tags contain the targetFilePath in the current html template file.
+            var revTargetFileModifyTime = null;
             for (var index in abspaths) {
-                if (abspaths[index].match(filenamePattern)) {
-                    revTargetFilePath = abspaths[index];
-                    break;
+                if (abspaths[index].match(filenamePattern)) { // there could be more than one revision files matched filenamePattern
+                    // match the first revision file.
+                    if (revTargetFilePath === null) {
+                        revTargetFilePath = abspaths[index];
+                    // match the one more revision files, pick up the latest files.
+                    } else {
+                        if (revTargetFileModifyTime === null) {
+                            revTargetFileModifyTime = fs.lstatSync(revTargetFilePath).mtime;
+                        }
+                        var currentFileModifyTime = fs.lstatSync(abspaths[index]).mtime;
+                        if (currentFileModifyTime > revTargetFileModifyTime) {
+                            revTargetFilePath = abspaths[index];
+                            revTargetFileModifyTime = currentFileModifyTime;
+                        }
+                    }
                 }
             }
             if (revTargetFilePath === null) {
