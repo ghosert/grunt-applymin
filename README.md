@@ -226,4 +226,5 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 * 2013-09-07 / v0.1.0 / initial commit
 * 2013-09-10 / v0.1.1 / bug fix on RegExp and the same pattern on multiple revision files.
 * 2013-09-10 / v0.1.2 / Better prompt for options.staticPattern issue.
+* 2013-09-22 / v0.1.3 / Fix the issue when there are duplicate filenames in different folders
 

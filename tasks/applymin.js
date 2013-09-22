@@ -212,7 +212,9 @@ module.exports = function(grunt) {
             var targetPath = pathFilename[0];
             var targetFilename = pathFilename[1];
 
-            var filenamePattern = new RegExp(targetPath + '\\S+?\\.' + targetFilename);
+            // bug fix: assets/xxxxxxxx.mdeditor.min.js, xxxxxxxx can't contain '/' or white character
+            // otherwise 'assets/mdeditor/1111.mmm.min.js' matched target filename: 'assets/mmm.min.js', which is incorrect.
+            var filenamePattern = new RegExp(targetPath + '[^\\/\\s]+?\\.' + targetFilename);
             var abspaths = null;
             var staticFileRefs = null;
             if (targetFilePath.match(/\.css$/i)) {
