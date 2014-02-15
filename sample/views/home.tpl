@@ -22,8 +22,10 @@
 		This is a demo page for grunt-applymin
 		</h2>
 		<ol>
+			<li> View the source of 'views/home.tpl'</li>
 			<li> Reload this page, you will see 8 requests in browser for css/js</li>
-			<li> 'cd grunt-applymin/sample', run 'grunt' to combine/minify/revisioning js/css files.</li>
+			<li> 'cd grunt-applymin/sample', run 'npm install' and 'grunt' to combine/minify/revisioning js/css files.</li>
+			<li> View the source of 'views/home.tpl' once again to see the changes.</li>
 			<li> Reload 'http://localhost:8080/', ONLY 3 requests now in browser for minified css/js</li>
 		</ol>
 	</div>

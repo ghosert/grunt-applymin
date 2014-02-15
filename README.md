@@ -1,6 +1,6 @@
 # grunt-applymin
 
-> Concat, minify and revisioning css/js files in html template page and easily switch optimized/raw css/js references in the html template files.
+> Concat, minify and revisioning css/js files in html template page and easily replace raw css/js references in the html template files.
 
 ## Getting Started
 This plugin requires Grunt `~0.4.1`
@@ -19,7 +19,7 @@ grunt.loadNpmTasks('grunt-applymin');
 
 ## Key idea
 
-This is a project for the comprehensive solution to concat/minify/revisioning css/js files and easily switch optimized/raw css/js references in the html template, ideally support any dynamic web site written by Java/Python/Ruby/PHP etc.
+This is a project for the comprehensive solution to concat/minify/revisioning css/js files and easily replace raw css/js references in the html template, ideally support any dynamic web site written by Java/Python/Ruby/PHP etc.
 
 The sample case is based on the simple, lightweight micro web-framework Bottle for Python. You could leverage the idea to other framework or Java/Ruby/PHP based web development.
 
@@ -43,12 +43,10 @@ Go through the demo codes in `grunt-applymin/sample`, it demonstrates the least 
 
 ## How it works
 
-**1.** Define a server side variable and pass to html template, e.g. `static_minified = True`
-
-**2.** Use customized html comments in html template to define the css/js blocks you want to concat/minify/revisioning and their output filenames, e.g.
+**1.** Use customized html comments in html template to define the css/js blocks you want to concat/minify/revisioning and their output filenames, e.g.
 
 ```
-<!-- beginmin: static/assets/main.lib.min.css -->
+<!-- beginmin: {{domain_url}}/static/assets/main.lib.min.css -->
 <link href="{{domain_url}}/static/css/bootstrap.css" rel="stylesheet" media="screen">
 <link href="{{domain_url}}/static/css/bootstrap-responsive.css" rel="stylesheet">
 <!-- endmin -->
@@ -57,26 +55,13 @@ Go through the demo codes in `grunt-applymin/sample`, it demonstrates the least 
 In this case, `bootstrap.css` and `bootstrap-responsive.css` are wrapped with `beginmin/endmin`,  which means they are planned to concat/minify/revision together.  
 The specified `static/assets/main.lib.min.css` will be the output filename.
 
-
-**3.** Use 'static_minified' passed from server side to switch optimized/raw css/js references in html template like below:
-
-```
-%if static_minified == True:
-    <link href="{{domain_url}}/static/assets/main.lib.min.css" rel="stylesheet" media="screen">
-%else:
-    <!-- beginmin: static/assets/main.lib.min.css -->
-    <link href="{{domain_url}}/static/css/bootstrap.css" rel="stylesheet" media="screen">
-    <link href="{{domain_url}}/static/css/bootstrap-responsive.css" rel="stylesheet">
-    <!-- endmin -->
-%end
-```
-
-`static_minified` here is your responsibility to define in any server side language like Java/Python/PHP/Ruby, and %if, %else, %end are the template tags which exist in any 3rd party template framework like Struts/Spring MVC for Java, Mako for Python etc.
-
-**4.** When your template file is ready like above, run 'grunt' to produce minified `static/assets/main.lib.min.css` with the revision filename e.g. `12345678.main.lib.min.css`, and grunt-applymin will update html template with this revision filename automatically, for example, change:
+**2.** When your template file is ready like above, run 'grunt' to produce minified `static/assets/main.lib.min.css` with the revision filename e.g. `12345678.main.lib.min.css`, and grunt-applymin will update html template with this revision filename automatically, for example, change:
 
 ```
-<link href="{{domain_url}}/static/assets/main.lib.min.css" rel="stylesheet" media="screen">
+<!-- beginmin: {{domain_url}}/static/assets/main.lib.min.css -->
+<link href="{{domain_url}}/static/css/bootstrap.css" rel="stylesheet" media="screen">
+<link href="{{domain_url}}/static/css/bootstrap-responsive.css" rel="stylesheet">
+<!-- endmin -->
 ```
 
 To:
@@ -85,9 +70,9 @@ To:
 <link href="{{domain_url}}/static/assets/12345678.main.lib.min.css" rel="stylesheet" media="screen">
 ```
 
-So that now you have one single html template but contains both optimized/raw css/js references, and could be easily switched by `static_minified`, suggest `True` in production, `False` in development.
+Since the change will happen on your html template, make sure you copied the html template to the "build" or "dist" folder before you run "grunt" to update html template.
 
-**5.** Any time you changed raw css/js or add/remove css/js references between
+**3.** Any time you changed raw css/js or add/remove css/js references between
 
 ```html
 <!-- beginmin: static/main.min.js -->
@@ -98,8 +83,8 @@ just re-run grunt to update the new revision filename in html template, the revi
 
 Run the demo and see how it works in details.
 
-1. `static_minified` mentioned is located at `grunt-applymin/sample/hello.py`
-2. html template sample is located at `grunt-applymin/sample/views/home.tpl`
+
+html template sample is located at `grunt-applymin/sample/views/home.tpl`
 
 
 ## Dependencies
@@ -158,7 +143,7 @@ The default value of `options.staticPattern` will then match this block and fetc
 For example, in some cases, your css/js tags could contain the backend variable in it like below:
 
 ```
-<!-- beginmin: static/assets/main.lib.min.css -->
+<!-- beginmin: {{domain_url}}/static/assets/main.lib.min.css -->
 <link href="{{domain_url}}/static/css/bootstrap.css" rel="stylesheet" media="screen">
 <link href="{{domain_url}}/static/css/bootstrap-responsive.css" rel="stylesheet">
 <!-- endmin -->
@@ -181,13 +166,13 @@ applymin: {
 
 #### beginmin
 
-beginmin: 'views/**/*.tpl'
+beginmin: `'views/**/*.tpl'`
 
-Specify the template files to `beginmin` target, in the sample above, grunt-applymin will search all the `.tpl` files in `views` folder recursively, and see if there are beginmin/endmin blocks to be handled. If you are using other template engine, you should change the appendix to *.jsp/*.php/*.mako, etc.
+Specify the template files to `beginmin` target, in the sample above, grunt-applymin will search all the `.tpl` files in `views` folder recursively, and see if there are beginmin/endmin blocks to be handled. If you are using other template engine, you should change the appendix to `*.jsp/*.php/*.mako`, etc.
 
 #### endmin
 
-endmin: 'static/assets'
+endmin: `'static/assets'`
 
 Specify the output path to store the minified css/js files. Since this is the folder to store minified files, you should make sure the name of the target filepath in html template should start with it. Otherwise, grunt-applymin will report warning. For example, in html template you write down:
 
@@ -213,8 +198,7 @@ When running `grunt`, grunt-applymin will also prompt you the error/warn info if
 
 1. The css/js files in html doesn't exist.
 2. The folder name in endmin target is inconsistent with beginmin comments in html template.
-3. The specified minified css/js files in beginmin comments in html template are not referred in the current html template.
-4. Intend to combine different beginmin/endmin html blocks to the same minified filename.
+3. Intend to combine different beginmin/endmin html blocks to the same minified filename.
 
 You don't have to worry about this, if you see the error/warn info, just make sure you take care of them and correct them to make it work.
 
@@ -227,4 +211,5 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 * 2013-09-10 / v0.1.1 / bug fix on RegExp and the same pattern on multiple revision files.
 * 2013-09-10 / v0.1.2 / Better prompt for options.staticPattern issue.
 * 2013-09-22 / v0.1.3 / Fix the issue when there are duplicate filenames in different folders
+* 2014-02-15 / v0.2.0 / Take the `static_minified` variable out, which is designed to switch raw/optimized css/js file. Means it will only replace the beginmin/endmin block with the optimized css/js instead of switch, this will make the plugin easier to use.
 
