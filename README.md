@@ -211,5 +211,5 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 * 2013-09-10 / v0.1.1 / bug fix on RegExp and the same pattern on multiple revision files.
 * 2013-09-10 / v0.1.2 / Better prompt for options.staticPattern issue.
 * 2013-09-22 / v0.1.3 / Fix the issue when there are duplicate filenames in different folders
-* 2014-02-15 / v0.2.0 / Take the `static_minified` variable out, which is designed to switch raw/optimized css/js file. Means it will only replace the beginmin/endmin block with the optimized css/js instead of switch, this will make the plugin easier to use.
+* 2014-02-15 / v0.2.0 / Eliminate `static_minified` switcher for raw/optimized css/js file. Just replace the beginmin/endmin block with the optimized css/js, this will make the plugin easier to use.
 
